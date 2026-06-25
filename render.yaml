@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: library-management-system-api
+    env: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: MONGO_URL
+        sync: false

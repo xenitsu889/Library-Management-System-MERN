@@ -5,6 +5,21 @@ This project is best deployed as two services:
 - Backend API: Node.js/Express service
 - Frontend: React static site
 
+## Render + Netlify Blueprint
+
+The cleanest split deployment for this repo is:
+
+- Render for the backend API
+- Netlify for the frontend React app
+
+### Render Blueprint
+
+Use the root-level [render.yaml](render.yaml) file to create the backend service.
+
+### Netlify Config
+
+Use the root-level [netlify.toml](netlify.toml) file to deploy the frontend as a static site.
+
 ## Recommended Host: Render
 
 ### 1) Prepare MongoDB Atlas
@@ -27,12 +42,12 @@ After deployment, note the backend URL, for example `https://your-backend.onrend
 
 ### 3) Deploy the frontend
 
-- Create a new Render Static Site
-- Root directory: `frontend`
-- Build command: `npm run build`
-- Publish directory: `build`
-- Environment variables:
+- Create a new Netlify site from the repository
+- Netlify will use `frontend` as the base directory and `npm run build` as the build command because of [netlify.toml](netlify.toml)
+- Set the environment variable:
   - `REACT_APP_API_URL` = your backend URL with a trailing slash, for example `https://your-backend.onrender.com/`
+
+If you prefer to keep everything on Render, you can still create a Render Static Site manually with the same frontend settings.
 
 ### 4) Seed demo data
 
