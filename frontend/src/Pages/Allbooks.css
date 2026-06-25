@@ -31,14 +31,16 @@
 
 .book-card img{
     width: 150px;
-    height: auto;
+    height: 210px;
+    object-fit: cover;
     margin-bottom: 25px!important;
     border-radius: 18px;
+    box-shadow: 0 12px 24px rgba(0,0,0,0.16);
 }
 
 .book-card img:hover{
     transform: scale(1.05);
-    transition: all ease 1.3s;
+    transition: all ease 0.4s;
 }
 
 .bookcard-title{

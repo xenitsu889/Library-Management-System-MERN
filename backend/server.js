@@ -13,9 +13,17 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 4000;
 
+app.disable("etag");
+
 /* Middlewares */
 app.use(express.json());
 app.use(cors());
+app.use((req, res, next) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
+  next();
+});
 
 /* API Routes */
 app.use("/api/auth", authRoutes);

@@ -6,16 +6,9 @@
 
 .popularbooks{
     padding: 20px;
-    overflow: hidden;
     width: 100%;
     margin: 0 auto;	
-    position: relative;
-	display: flex;
     height: auto;
-}
-
-.popularbooks:hover div{
-    animation-play-state: paused;
 }
 
 .popularbooks-title{
@@ -33,23 +26,37 @@
     animation-play-state: paused;
 }
 
-.popularbook-images{
-    animation: marquee 15s linear infinite;
+.popularbooks-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+}
+
+.popular-card{
+    background: rgba(255,255,255,0.72);
+    border-radius: 18px;
+    padding: 24px 20px;
+    text-align: center;
+    min-height: 180px;
     display: flex;
-    position: relative;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 10px;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.08);
 }
 
-.popular-book{
-    display: block;
-    width: 150px;
-    height: auto;
-    margin: 0 1vw;
-    border-radius: 5px;
+.popular-icon{
+    font-size: 42px !important;
+    color: #0E2431;
 }
 
-@keyframes marquee {
-	0%   { transform: translateX(0%); }
-	100% { transform: translateX(-100%); }
+.popular-card h3{
+    margin: 0;
+}
+
+.popular-card p{
+    margin: 0;
+    color: #334;
+    line-height: 1.5;
 }

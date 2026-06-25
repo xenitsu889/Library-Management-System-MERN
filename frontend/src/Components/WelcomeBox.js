@@ -4,9 +4,9 @@ import './WelcomeBox.css'
 function WelcomeBox() {
     return (
         <div className='welcome-box'>
-            <p className='welcome-title'>WELCOME TO LIBRARY</p>
-            <p className='welcome-message'>Feed Your Brain<br/>
-            <span className='welcome-submessage'>Grab A Book To Read</span></p>
+            <p className='welcome-title'>GOVERNMENT LIBRARY MANAGEMENT PORTAL</p>
+            <p className='welcome-message'>Centralized access for records, circulation, and member services<br/>
+            <span className='welcome-submessage'>Secure, structured, and ready for institutional use</span></p>
         </div>
     )
 }

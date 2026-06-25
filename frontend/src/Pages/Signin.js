@@ -40,7 +40,7 @@ function Signin() {
                     <h2 className="signin-title"> Log in</h2>
                     <p className="line"></p>
                     <div className="persontype-question">
-                        <p>Are you a Staff member ?</p>
+                        <p>Are you signing in as staff?</p>
                         <Switch
                             onChange={() => setIsStudent(!isStudent)}
                             color="primary"
@@ -53,11 +53,11 @@ function Signin() {
                         <label htmlFor="password"><b>Password</b></label>
                         <input className='signin-textbox' type="password" minLength='6' placeholder="Enter Password" name="psw" required onChange={(e) => { setPassword(e.target.value) }} />
                         </div>
-                    <button className="signin-button">Log In</button>
-                    <a className="forget-pass" href="#home">Forgot password?</a>
+                    <button className="signin-button">Sign In</button>
+                    <a className="forget-pass" href="#home">For account support, contact administration.</a>
                 </form>
                 <div className='signup-option'>
-                    <p className="signup-question">Don't have an account? Contact Librarian</p>
+                    <p className="signup-question">For access credentials, contact the system administrator.</p>
                 </div>
             </div>
         </div>

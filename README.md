@@ -44,26 +44,43 @@ Show some ❤️ and 🌟 the repo to support the project
 
 ### Frontend Setup 🍧
 
-1. Get into the chatapp directory
+1. Get into the frontend directory
    `cd frontend`
 
-2. Run `yarn` to install dependencies
+2. Run `npm install` to install dependencies
 
 3. Create a `.env` file and create variables as mentioned in the `.env.example` with the values
 
-4. Run `yarn start` to start the application
+4. Run `npm start` to start the application
 
 ### Backend Setup 🍿
 
 1. Get into backend directory `cd backend`
 
-2. Run `yarn` to install dependencies
+2. Run `npm install` to install dependencies
 
-3. Create a MongoDB account and get the MONOGO_URL for connecting the server and the Database
+3. Create a MongoDB account and get the `MONGO_URL` for connecting the server and the database
 
 4. Create a `.env` file and create variables as mentioned in the `.env.example` with the values
 
-5. Run `nodemon server.js` to start the server [Should have installed nodemon globally]
+5. Run `npm run dev` to start the server in development or `npm start` for production
+
+### Local Configuration
+
+- Backend: `PORT=5000`, `MONGO_URL=mongodb://127.0.0.1:27017/library-management-2`
+- Frontend: `REACT_APP_API_URL=http://localhost:5000/`
+- If you are building the frontend on Node 22+, the repo already includes the OpenSSL compatibility flag in the build and start scripts
+
+### Demo Credentials
+
+- Admin: `EMP1001` / `Admin@123`
+- Student 1: `STU1001` / `Student@123`
+- Student 2: `STU1002` / `Student@123`
+- Run `npm run seed:demo` inside `backend` to load the sample users, books, categories, and transactions
+
+### Deployment
+
+- See [DEPLOYMENT.md](DEPLOYMENT.md) for the recommended Render setup for backend and frontend hosting
 
 ## Technologies 🛠
 

@@ -1,33 +1,19 @@
 import React from 'react'
 import './RecentAddedBooks.css'
+import LibraryBooksIcon from '@material-ui/icons/LibraryBooks';
+import EventNoteIcon from '@material-ui/icons/EventNote';
+import HistoryIcon from '@material-ui/icons/History';
+import SecurityIcon from '@material-ui/icons/Security';
 
 function RecentAddedBooks() {
     return (
         <div className='recentaddedbooks-container'>
-            <h className='recentbooks-title'>Recent Uploads</h>
-            <div className='recentbooks'>
-                <div className='images'>
-                    <img className='recent-book' src='https://inkinmytea.files.wordpress.com/2011/12/apj.jpg?w=640' alt=''></img>
-                    <img className='recent-book' src='https://images-na.ssl-images-amazon.com/images/I/91VokXkn8hL.jpg' alt=''></img>
-                    <img className='recent-book' src='https://images-na.ssl-images-amazon.com/images/I/81-QB7nDh4L.jpg' alt=''></img>
-                    <img className='recent-book' src='https://images-na.ssl-images-amazon.com/images/I/71m-MxdJ2WL.jpg' alt=''></img>
-                    <img className='recent-book' src='https://images-na.ssl-images-amazon.com/images/I/71t4GuxLCuL.jpg' alt=''></img>
-                    <img className='recent-book' src='https://19en282jw7pc3zpwj22pg8v0-wpengine.netdna-ssl.com/wp-content/uploads/2021/01/Good-to-Great-Jim-Collins.jpg' alt=''></img>
-                    <img className='recent-book' src='https://images-na.ssl-images-amazon.com/images/I/81mXQdi5x+L.jpg' alt=''></img>
-                    <img className='recent-book' src='https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1498813353l/34267304.jpg' alt=''></img>
-                    <img className='recent-book' src='https://d1csarkz8obe9u.cloudfront.net/posterpreviews/action-thriller-book-cover-design-template-3675ae3e3ac7ee095fc793ab61b812cc_screen.jpg?ts=1588152105' alt=''></img>
-                </div>
-                <div className='images'>
-                    <img className='recent-book' src='https://inkinmytea.files.wordpress.com/2011/12/apj.jpg?w=640' alt=''></img>
-                    <img className='recent-book' src='https://images-na.ssl-images-amazon.com/images/I/91VokXkn8hL.jpg' alt=''></img>
-                    <img className='recent-book' src='https://images-na.ssl-images-amazon.com/images/I/81-QB7nDh4L.jpg' alt=''></img>
-                    <img className='recent-book' src='https://images-na.ssl-images-amazon.com/images/I/71m-MxdJ2WL.jpg' alt=''></img>
-                    <img className='recent-book' src='https://images-na.ssl-images-amazon.com/images/I/71t4GuxLCuL.jpg' alt=''></img>
-                    <img className='recent-book' src='https://19en282jw7pc3zpwj22pg8v0-wpengine.netdna-ssl.com/wp-content/uploads/2021/01/Good-to-Great-Jim-Collins.jpg' alt=''></img>
-                    <img className='recent-book' src='https://images-na.ssl-images-amazon.com/images/I/81mXQdi5x+L.jpg' alt=''></img>
-                    <img className='recent-book' src='https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1498813353l/34267304.jpg' alt=''></img>
-                    <img className='recent-book' src='https://d1csarkz8obe9u.cloudfront.net/posterpreviews/action-thriller-book-cover-design-template-3675ae3e3ac7ee095fc793ab61b812cc_screen.jpg?ts=1588152105' alt=''></img>
-                </div>
+            <h className='recentbooks-title'>Recent Additions</h>
+            <div className='recentbooks recentbooks-grid'>
+                <div className='recent-card'><LibraryBooksIcon className='recent-icon' /><h3>Catalog Entries</h3><p>New titles are added through administrative review.</p></div>
+                <div className='recent-card'><EventNoteIcon className='recent-icon' /><h3>Reservation Logs</h3><p>Hold requests are recorded for controlled circulation.</p></div>
+                <div className='recent-card'><HistoryIcon className='recent-icon' /><h3>Issue History</h3><p>Every issue and return action is tracked in the portal.</p></div>
+                <div className='recent-card'><SecurityIcon className='recent-icon' /><h3>Verified Records</h3><p>Member details stay aligned with authorization rules.</p></div>
             </div>
         </div>
     )

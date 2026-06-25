@@ -6,15 +6,8 @@
 
 .recentbooks{
     padding: 20px;
-    overflow: hidden;
     width: 100%;
-    margin: 0 auto;	
-    position: relative;
-	display: flex;
-}
-
-.recentbooks:hover div{
-    animation-play-state: paused;
+    margin: 0 auto;
 }
 
 .recentbooks-title{
@@ -24,29 +17,39 @@
     text-align: center;
 }
 
-.recent-book:hover{
-    transform: scale(1.15);
-    transition: all ease 0.7s;
-    animation-play-state: paused;
+.recentbooks-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
 }
 
-.images{
-    animation: marquee 15s linear infinite;
+.recent-card{
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    padding: 24px 20px;
+    text-align: center;
+    color: #fff;
+    min-height: 190px;
     display: flex;
-    position: relative;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 12px;
 }
 
-.recent-book{
-    display: block;
-    width: 150px;
-    height: auto;
-    margin: 0 1vw;
-    border-radius: 5px;
+.recent-icon{
+    font-size: 44px !important;
+    color: rgb(238,129,30);
 }
 
-@keyframes marquee {
-	0%   { transform: translateX(0%); }
-	100% { transform: translateX(-100%); }
+.recent-card h3{
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.recent-card p{
+    margin: 0;
+    color: rgba(255,255,255,0.86);
+    line-height: 1.55;
 }

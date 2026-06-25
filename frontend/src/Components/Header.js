@@ -20,26 +20,26 @@ function Header() {
     return (
         <div className="header">
             <div className="logo-nav">
-            <Link to='/'>
-                <a href="#home">LIBRARY</a>
+            <Link to='/' className="logo-link">
+                LIBRARY
             </Link>
             </div>
             <div className='nav-right'>
-                <input className='search-input' type='text' placeholder='Search a Book'/>
+                <input className='search-input' type='text' placeholder='Search books'/>
                 <ul className={menutoggle ? "nav-options active" : "nav-options"}>
                     <li className="option" onClick={() => { closeMenu() }}>
                         <Link to='/'>
-                            <a href="#home">Home</a>
+                            Home
                         </Link>
                     </li>
                     <li className="option" onClick={() => { closeMenu() }}>
                         <Link to='/books'>
-                        <a href="#books">Books</a>
+                        Books
                         </Link>
                     </li>
                     <li className="option" onClick={() => { closeMenu() }}>
                         <Link to='/signin'>
-                        <a href='signin'>SignIn</a>
+                        Sign In
                         </Link>
                     </li>
                 </ul>
