@@ -15,7 +15,21 @@ function ManageMembers() {
     const [success, setSuccess] = useState("")
     const [loading, setLoading] = useState(true)
 
-    const loadMembers = async () => {
+    useEffect(() => {
+        const loadMembers = async () => {
+            setLoading(true)
+            try {
+                const response = await axios.get(API_URL + "api/users/allmembers")
+                setMembers(response.data)
+            } catch (err) {
+                setError(getApiErrorMessage(err, "Failed to load members."))
+            }
+            setLoading(false)
+        }
+        loadMembers()
+    }, [API_URL])
+
+    const reloadMembers = async () => {
         setLoading(true)
         try {
             const response = await axios.get(API_URL + "api/users/allmembers")
@@ -25,8 +39,6 @@ function ManageMembers() {
         }
         setLoading(false)
     }
-
-    useEffect(() => { loadMembers() }, [API_URL])
 
     const startEdit = (member) => {
         setEditingId(member._id)
@@ -72,7 +84,7 @@ function ManageMembers() {
             })
             setSuccess("Member updated successfully.")
             setEditingId(null)
-            loadMembers()
+            reloadMembers()
         } catch (err) {
             setError(getApiErrorMessage(err, "Failed to update member."))
         }
@@ -88,7 +100,7 @@ function ManageMembers() {
             })
             setSuccess("Member deleted successfully.")
             if (editingId === memberId) cancelEdit()
-            loadMembers()
+            reloadMembers()
         } catch (err) {
             setError(getApiErrorMessage(err, "Failed to delete member."))
         }

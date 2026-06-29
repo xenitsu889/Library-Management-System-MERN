@@ -15,7 +15,21 @@ function ManageBooks() {
     const [success, setSuccess] = useState("")
     const [loading, setLoading] = useState(true)
 
-    const loadBooks = async () => {
+    useEffect(() => {
+        const loadBooks = async () => {
+            setLoading(true)
+            try {
+                const response = await axios.get(API_URL + "api/books/allbooks")
+                setBooks(response.data)
+            } catch (err) {
+                setError(getApiErrorMessage(err, "Failed to load books."))
+            }
+            setLoading(false)
+        }
+        loadBooks()
+    }, [API_URL])
+
+    const reloadBooks = async () => {
         setLoading(true)
         try {
             const response = await axios.get(API_URL + "api/books/allbooks")
@@ -25,8 +39,6 @@ function ManageBooks() {
         }
         setLoading(false)
     }
-
-    useEffect(() => { loadBooks() }, [API_URL])
 
     const startEdit = (book) => {
         setEditingId(book._id)
@@ -69,7 +81,7 @@ function ManageBooks() {
             })
             setSuccess("Book updated successfully.")
             setEditingId(null)
-            loadBooks()
+            reloadBooks()
         } catch (err) {
             setError(getApiErrorMessage(err, "Failed to update book."))
         }
@@ -85,7 +97,7 @@ function ManageBooks() {
             })
             setSuccess("Book deleted successfully.")
             if (editingId === bookId) cancelEdit()
-            loadBooks()
+            reloadBooks()
         } catch (err) {
             setError(getApiErrorMessage(err, "Failed to delete book."))
         }

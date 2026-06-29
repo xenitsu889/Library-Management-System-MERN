@@ -14,7 +14,21 @@ function ManageCategories() {
     const [success, setSuccess] = useState("")
     const [loading, setLoading] = useState(true)
 
-    const loadCategories = async () => {
+    useEffect(() => {
+        const loadCategories = async () => {
+            setLoading(true)
+            try {
+                const response = await axios.get(API_URL + "api/categories/allcategories")
+                setCategories(response.data)
+            } catch (err) {
+                setError(getApiErrorMessage(err, "Failed to load categories."))
+            }
+            setLoading(false)
+        }
+        loadCategories()
+    }, [API_URL])
+
+    const reloadCategories = async () => {
         setLoading(true)
         try {
             const response = await axios.get(API_URL + "api/categories/allcategories")
@@ -24,8 +38,6 @@ function ManageCategories() {
         }
         setLoading(false)
     }
-
-    useEffect(() => { loadCategories() }, [API_URL])
 
     const addCategory = async (e) => {
         e.preventDefault()
@@ -42,7 +54,7 @@ function ManageCategories() {
             })
             setCategoryName("")
             setSuccess("Category added successfully.")
-            loadCategories()
+            reloadCategories()
         } catch (err) {
             setError(getApiErrorMessage(err, "Failed to add category."))
         }
@@ -57,7 +69,7 @@ function ManageCategories() {
                 data: { isAdmin: user.isAdmin }
             })
             setSuccess("Category deleted successfully.")
-            loadCategories()
+            reloadCategories()
         } catch (err) {
             setError(getApiErrorMessage(err, "Failed to delete category."))
         }
