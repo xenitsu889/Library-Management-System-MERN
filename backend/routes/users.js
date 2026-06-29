@@ -7,7 +7,19 @@ const router = express.Router()
 /* Getting user by id */
 router.get("/getuser/:id", async (req, res) => {
     try {
-        const user = await User.findById(req.params.id).populate("activeTransactions").populate("prevTransactions")
+        const identifier = req.params.id;
+        const isObjectId = /^[0-9a-fA-F]{24}$/.test(identifier);
+
+        const user = await User.findOne(
+            isObjectId
+                ? { _id: identifier }
+                : { $or: [{ admissionId: identifier }, { employeeId: identifier }] }
+        ).populate("activeTransactions").populate("prevTransactions")
+
+        if (!user) {
+            return res.status(404).json("User not found");
+        }
+
         const { password, updatedAt, ...other } = user._doc;
         res.status(200).json(other);
     } 
