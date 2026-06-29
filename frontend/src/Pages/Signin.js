@@ -4,6 +4,7 @@ import axios from 'axios'
 import { useHistory } from 'react-router-dom'
 import { AuthContext } from '../Context/AuthContext.js'
 import Switch from '@material-ui/core/Switch';
+import { getApiErrorMessage } from '../utils/formHelpers'
 
 function Signin() {
     const [isStudent, setIsStudent] = useState(true)
@@ -26,7 +27,16 @@ function Signin() {
         }
         catch (err) {
             dispatch({ type: "LOGIN_FAILURE", payload: err })
-            setError("Wrong Password Or Username")
+            const status = err?.response?.status
+            if (status === 404) {
+                setError("User not found. Check your ID and try again.")
+            } else if (status === 400) {
+                setError(getApiErrorMessage(err, "Wrong password. Please try again."))
+            } else if (!err?.response) {
+                setError("Unable to connect to the server. Please try again later.")
+            } else {
+                setError(getApiErrorMessage(err, "Sign in failed. Please try again."))
+            }
         }
     }
 

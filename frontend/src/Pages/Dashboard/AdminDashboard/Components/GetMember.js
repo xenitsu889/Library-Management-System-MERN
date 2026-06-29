@@ -4,6 +4,8 @@ import axios from "axios"
 import { Dropdown } from 'semantic-ui-react'
 import '../../MemberDashboard/MemberDashboard.css'
 import moment from "moment"
+import FormMessage from '../../../../Components/FormMessage'
+import { getApiErrorMessage } from '../../../../utils/formHelpers'
 
 function GetMember() {
 
@@ -12,6 +14,7 @@ function GetMember() {
     const [allMembersOptions, setAllMembersOptions] = useState(null)
     const [memberId, setMemberId] = useState(null)
     const [memberDetails, setMemberDetails] = useState(null)
+    const [error, setError] = useState("")
 
     //Fetch Members
     useEffect(() => {
@@ -23,7 +26,7 @@ function GetMember() {
                 )))
             }
             catch (err) {
-                console.log(err)
+                setError(getApiErrorMessage(err, "Failed to load members."))
             }
         }
         getMembers()
@@ -38,7 +41,7 @@ function GetMember() {
                     setMemberDetails(response.data)
                 }
                 catch (err) {
-                    console.log("Error in fetching the member details")
+                    setError(getApiErrorMessage(err, "Failed to load member details."))
                 }
             }
         }
@@ -48,6 +51,7 @@ function GetMember() {
 
     return (
         <div>
+            <FormMessage type="error" message={error} />
             <div className='semanticdropdown getmember-dropdown'>
                 <Dropdown
                     placeholder='Select Member'
@@ -112,12 +116,12 @@ function GetMember() {
                         <div className="specific-right">
                             <div style={{ display: "flex", flexDirection: "column", flex: "0.5" }}>
                                 <p style={{ fontSize: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}><b>Points</b></p>
-                                <p style={{ fontSize: "25px", fontWeight: "500", display: "flex", alignItems: "center", justifyContent: "center", marginTop: "15px" }}>540</p>
+                                <p style={{ fontSize: "25px", fontWeight: "500", display: "flex", alignItems: "center", justifyContent: "center", marginTop: "15px" }}>{memberDetails?.points ?? 0}</p>
                             </div>
                             <div className="dashboard-title-line"></div>
                             <div style={{ display: "flex", flexDirection: "column", flex: "0.5" }}>
                                 <p style={{ fontSize: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}><b>Rank</b></p>
-                                <p style={{ fontSize: "25px", fontWeight: "500", display: "flex", alignItems: "center", justifyContent: "center", marginTop: "15px" }}>{memberDetails?.points}</p>
+                                <p style={{ fontSize: "25px", fontWeight: "500", display: "flex", alignItems: "center", justifyContent: "center", marginTop: "15px" }}>{memberDetails?.points ?? 0}</p>
                             </div>
                         </div>
                     </div>

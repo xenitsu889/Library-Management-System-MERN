@@ -1,32 +1,39 @@
 import express from "express"
 import Book from "../models/Book.js"
 import BookTransaction from "../models/BookTransaction.js"
+import { formatMongooseError } from "../utils/validation.js"
 
 const router = express.Router()
 
 router.post("/add-transaction", async (req, res) => {
     try {
-        if (req.body.isAdmin === true) {
-            const newtransaction = await new BookTransaction({
-                bookId: req.body.bookId,
-                borrowerId: req.body.borrowerId,
-                bookName: req.body.bookName,
-                borrowerName: req.body.borrowerName,
-                transactionType: req.body.transactionType,
-                fromDate: req.body.fromDate,
-                toDate: req.body.toDate
-            })
-            const transaction = await newtransaction.save()
-            const book = Book.findById(req.body.bookId)
-            await book.updateOne({ $push: { transactions: transaction._id } })
-            res.status(200).json(transaction)
+        if (req.body.isAdmin !== true) {
+            return res.status(403).json("You are not allowed to add a transaction.");
         }
-        else if (req.body.isAdmin === false) {
-            res.status(500).json("You are not allowed to add a Transaction")
+        const { bookId, borrowerId, bookName, borrowerName, transactionType, fromDate, toDate } = req.body;
+        if (!bookId || !borrowerId || !transactionType || !fromDate || !toDate) {
+            return res.status(400).json("All transaction fields are required.");
         }
+        if (Date.parse(toDate) < Date.parse(fromDate)) {
+            return res.status(400).json("To date must be on or after from date.");
+        }
+        const newtransaction = await new BookTransaction({
+            bookId,
+            borrowerId,
+            bookName,
+            borrowerName,
+            transactionType,
+            fromDate,
+            toDate
+        })
+        const transaction = await newtransaction.save()
+        const book = Book.findById(bookId)
+        await book.updateOne({ $push: { transactions: transaction._id } })
+        res.status(200).json(transaction)
     }
     catch (err) {
-        res.status(504).json(err)
+        const { status, message } = formatMongooseError(err);
+        res.status(status).json(message);
     }
 })
 
@@ -42,15 +49,20 @@ router.get("/all-transactions", async (req, res) => {
 
 router.put("/update-transaction/:id", async (req, res) => {
     try {
-        if (req.body.isAdmin) {
-            await BookTransaction.findByIdAndUpdate(req.params.id, {
-                $set: req.body,
-            });
-            res.status(200).json("Transaction details updated successfully");
+        if (!req.body.isAdmin) {
+            return res.status(403).json("You are not allowed to update a transaction.");
         }
+        const allowedFields = ["transactionType", "transactionStatus", "returnDate", "fromDate", "toDate"];
+        const updateFields = {};
+        allowedFields.forEach((field) => {
+            if (req.body[field] !== undefined) updateFields[field] = req.body[field];
+        });
+        await BookTransaction.findByIdAndUpdate(req.params.id, { $set: updateFields });
+        res.status(200).json("Transaction details updated successfully");
     }
     catch (err) {
-        res.status(504).json(err)
+        const { status, message } = formatMongooseError(err);
+        res.status(status).json(message);
     }
 })
 

@@ -5,6 +5,8 @@ import { Dropdown } from 'semantic-ui-react'
 import '../../MemberDashboard/MemberDashboard.css'
 import moment from "moment"
 import { AuthContext } from '../../../../Context/AuthContext'
+import FormMessage from '../../../../Components/FormMessage'
+import { getApiErrorMessage } from '../../../../utils/formHelpers'
 
 
 function Return() {
@@ -17,6 +19,8 @@ function Return() {
 
     const [allMembersOptions, setAllMembersOptions] = useState(null)
     const [borrowerId, setBorrowerId] = useState(null)
+    const [error, setError] = useState("")
+    const [success, setSuccess] = useState("")
 
 
     //Fetching all Members
@@ -29,7 +33,7 @@ function Return() {
                 )))
             }
             catch (err) {
-                console.log(err)
+                setError(getApiErrorMessage(err, "Failed to load members."))
             }
         }
         getMembers()
@@ -44,11 +48,10 @@ function Return() {
                 setAllTransactions(response.data.sort((a, b) => Date.parse(a.toDate) - Date.parse(b.toDate)).filter((data) => {
                     return data.transactionStatus === "Active"
                 }))
-                console.log("Okay")
                 setExecutionStatus(null)
             }
             catch(err){
-                console.log(err)
+                setError(getApiErrorMessage(err, "Failed to load transactions."))
             }
         }
         getAllTransactions()
@@ -56,6 +59,8 @@ function Return() {
 
 
     const returnBook = async (transactionId,borrowerId,bookId,due) =>{
+        setError("")
+        setSuccess("")
         try{
             /* Setting return date and transactionStatus to completed */
             await axios.put(API_URL+"api/transactions/update-transaction/"+transactionId,{
@@ -95,30 +100,34 @@ function Return() {
             })
 
             setExecutionStatus("Completed");
-            alert("Book returned to the library successfully")
+            setSuccess("Book returned to the library successfully.")
         }
         catch(err){
-            console.log(err)
+            setError(getApiErrorMessage(err, "Failed to return book."))
         }
     }
 
     const convertToIssue = async (transactionId) => {
+        setError("")
+        setSuccess("")
         try{
             await axios.put(API_URL+"api/transactions/update-transaction/"+transactionId,{
                 transactionType:"Issued",
                 isAdmin:user.isAdmin
             })
             setExecutionStatus("Completed");
-            alert("Book issued succesfully 🎆")
+            setSuccess("Book issued successfully.")
         }
         catch(err){
-            console.log(err)
+            setError(getApiErrorMessage(err, "Failed to convert reservation to issue."))
         }
     }
 
 
     return (
         <div>
+            <FormMessage type="error" message={error} />
+            <FormMessage type="success" message={success} />
             <div className='semanticdropdown returnbook-dropdown'>
                 <Dropdown
                     placeholder='Select Member'

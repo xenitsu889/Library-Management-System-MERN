@@ -14,6 +14,8 @@ import { IconButton } from "@material-ui/core";
 import { AuthContext } from "../../../Context/AuthContext";
 import axios from "axios";
 import moment from "moment";
+import FormMessage from "../../../Components/FormMessage";
+import { getApiErrorMessage } from "../../../utils/formHelpers";
 
 function MemberDashboard() {
   const [active, setActive] = useState("profile");
@@ -22,17 +24,22 @@ function MemberDashboard() {
   const API_URL = process.env.REACT_APP_API_URL;
   const { user } = useContext(AuthContext);
   const [memberDetails, setMemberDetails] = useState(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const getMemberDetails = async () => {
+      setLoading(true);
+      setError("");
       try {
         const response = await axios.get(
           API_URL + "api/users/getuser/" + user._id
         );
         setMemberDetails(response.data);
       } catch (err) {
-        console.log("Error in fetching the member details");
+        setError(getApiErrorMessage(err, "Failed to load your profile."));
       }
+      setLoading(false);
     };
     getMemberDetails();
   }, [API_URL, user]);
@@ -126,6 +133,8 @@ function MemberDashboard() {
         </div>
 
         <div className="dashboard-option-content">
+          <FormMessage type="error" message={error} />
+          {loading && <p className="dashboard-loading">Loading your data...</p>}
           <div className="member-profile-content" id="profile@member">
             <div className="user-details-topbar">
               <img
@@ -198,7 +207,7 @@ function MemberDashboard() {
                       marginTop: "15px",
                     }}
                   >
-                    540
+                    {memberDetails?.points ?? 0}
                   </p>
                 </div>
                 <div className="dashboard-title-line"></div>
@@ -216,7 +225,7 @@ function MemberDashboard() {
                       marginTop: "15px",
                     }}
                   >
-                    {memberDetails?.points}
+                    {memberDetails?.points ?? 0}
                   </p>
                 </div>
               </div>

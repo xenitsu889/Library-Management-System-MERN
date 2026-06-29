@@ -51,8 +51,13 @@ router.put("/updateuser/:id", async (req, res) => {
             }
         }
         try {
+            const allowedFields = ["userFullName", "address", "mobileNumber", "age", "gender", "dob", "email", "photo", "points", "password"];
+            const updateFields = {};
+            allowedFields.forEach((field) => {
+                if (req.body[field] !== undefined) updateFields[field] = req.body[field];
+            });
             const user = await User.findByIdAndUpdate(req.params.id, {
-                $set: req.body,
+                $set: updateFields,
             });
             res.status(200).json("Account has been updated");
         } catch (err) {

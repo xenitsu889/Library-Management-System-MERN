@@ -6,6 +6,8 @@ import { Dropdown } from 'semantic-ui-react'
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import moment from "moment"
+import FormMessage from '../../../../Components/FormMessage'
+import { getApiErrorMessage } from '../../../../utils/formHelpers'
 
 function AddTransaction() {
 
@@ -26,6 +28,9 @@ function AddTransaction() {
     const [toDate, setToDate] = useState(null)
     const [toDateString, setToDateString] = useState(null)
 
+    const [error, setError] = useState("")
+    const [success, setSuccess] = useState("")
+
     const transactionTypes = [
         { value: 'Reserved', text: 'Reserve' },
         { value: 'Issued', text: 'Issue' }
@@ -33,15 +38,26 @@ function AddTransaction() {
 
     const [transactionType, setTransactionType] = useState("")
 
-    /* Adding a Transaction */
     const addTransaction = async (e) => {
         e.preventDefault()
+        setError("")
+        setSuccess("")
+
+        if (bookId === "" || borrowerId === "" || transactionType === "" || fromDate === null || toDate === null) {
+            setError("All fields are required.")
+            return
+        }
+
+        if (Date.parse(toDateString) < Date.parse(fromDateString)) {
+            setError("To date must be on or after from date.")
+            return
+        }
+
         setIsLoading(true)
-        if (bookId !== "" && borrowerId !== "" && transactionType !== "" && fromDate !== null && toDate !== null) {
+        try {
             const borrower_details = await axios.get(API_URL + "api/users/getuser/" + borrowerId)
             const book_details = await axios.get(API_URL + "api/books/getbook/" + bookId)
-            
-            /* Checking weather the book is available or not */
+
             if ((book_details.data.bookCountAvailable > 0 && (transactionType === "Issued" || transactionType === "Reserved")) || (book_details.data.bookCountAvailable === 0 && transactionType === "Reserved")) {
                 const transactionData = {
                     bookId: bookId,
@@ -53,47 +69,41 @@ function AddTransaction() {
                     toDate: toDateString,
                     isAdmin: user.isAdmin
                 }
-                try {
-                    const response = await axios.post(API_URL + "api/transactions/add-transaction", transactionData)
-                    if (recentTransactions.length >= 5) {
-                        (recentTransactions.splice(-1))
-                    }
-                    await axios.put(API_URL + `api/users/${response.data._id}/move-to-activetransactions`, {
-                        userId: borrowerId,
-                        isAdmin: user.isAdmin
-                    })
-
-                    await axios.put(API_URL+"api/books/updatebook/"+bookId,{
-                        isAdmin:user.isAdmin,
-                        bookCountAvailable:book_details.data.bookCountAvailable - 1
-                    })
-
-                    setRecentTransactions([response.data, ...recentTransactions])
-                    setBorrowerId("")
-                    setBookId("")
-                    setTransactionType("")
-                    setFromDate(null)
-                    setToDate(null)
-                    setFromDateString(null)
-                    setToDateString(null)
-                    alert("Transaction was Successfull 🎉")
+                const response = await axios.post(API_URL + "api/transactions/add-transaction", transactionData)
+                if (recentTransactions.length >= 5) {
+                    (recentTransactions.splice(-1))
                 }
-                catch (err) {
-                    console.log(err)
-                }
+                await axios.put(API_URL + `api/users/${response.data._id}/move-to-activetransactions`, {
+                    userId: borrowerId,
+                    isAdmin: user.isAdmin
+                })
+
+                await axios.put(API_URL + "api/books/updatebook/" + bookId, {
+                    isAdmin: user.isAdmin,
+                    bookCountAvailable: book_details.data.bookCountAvailable - 1
+                })
+
+                setRecentTransactions([response.data, ...recentTransactions])
+                setBorrowerId("")
+                setBookId("")
+                setTransactionType("")
+                setFromDate(null)
+                setToDate(null)
+                setFromDateString(null)
+                setToDateString(null)
+                setSuccess("Transaction completed successfully.")
             }
-            else{
-                alert("The book is not available")
+            else {
+                setError("This book is not available for the selected transaction type.")
             }
         }
-        else {
-            alert("Fields must not be empty")
+        catch (err) {
+            setError(getApiErrorMessage(err, "Failed to create transaction."))
         }
         setIsLoading(false)
     }
 
 
-    /* Fetch Transactions */
     useEffect(() => {
         const getTransactions = async () => {
             try {
@@ -101,7 +111,7 @@ function AddTransaction() {
                 setRecentTransactions(response.data.slice(0, 5))
             }
             catch (err) {
-                console.log("Error in fetching transactions")
+                setError(getApiErrorMessage(err, "Failed to load transactions."))
             }
 
         }
@@ -109,7 +119,6 @@ function AddTransaction() {
     }, [API_URL])
 
 
-    /* Fetching borrower details */
     useEffect(() => {
         const getBorrowerDetails = async () => {
             try {
@@ -119,14 +128,13 @@ function AddTransaction() {
                 }
             }
             catch (err) {
-                console.log("Error in getting borrower details")
+                setError(getApiErrorMessage(err, "Failed to load borrower details."))
             }
         }
         getBorrowerDetails()
     }, [API_URL, borrowerId])
 
 
-    /* Fetching members */
     useEffect(() => {
         const getMembers = async () => {
             try {
@@ -137,21 +145,24 @@ function AddTransaction() {
                 setAllMembers(all_members)
             }
             catch (err) {
-                console.log(err)
+                setError(getApiErrorMessage(err, "Failed to load members."))
             }
         }
         getMembers()
     }, [API_URL])
 
 
-    /* Fetching books */
     useEffect(() => {
         const getallBooks = async () => {
-            const response = await axios.get(API_URL + "api/books/allbooks")
-            const allbooks = await response.data.map(book => (
-                { value: `${book._id}`, text: `${book.bookName}` }
-            ))
-            setAllBooks(allbooks)
+            try {
+                const response = await axios.get(API_URL + "api/books/allbooks")
+                const allbooks = await response.data.map(book => (
+                    { value: `${book._id}`, text: `${book.bookName}` }
+                ))
+                setAllBooks(allbooks)
+            } catch (err) {
+                setError(getApiErrorMessage(err, "Failed to load books."))
+            }
         }
         getallBooks()
     }, [API_URL])
@@ -161,6 +172,8 @@ function AddTransaction() {
         <div>
             <p className="dashboard-option-title">Add a Transaction</p>
             <div className="dashboard-title-line"></div>
+            <FormMessage type="error" message={error} />
+            <FormMessage type="success" message={success} />
             <form className='transaction-form' onSubmit={addTransaction}>
                 <label className="transaction-form-label" htmlFor="borrowerId">Borrower<span className="required-field">*</span></label><br />
                 <div className='semanticdropdown'>
@@ -171,7 +184,7 @@ function AddTransaction() {
                         selection
                         value={borrowerId}
                         options={allMembers}
-                        onChange={(event, data) => setBorrowerId(data.value)}
+                        onChange={(event, data) => { setBorrowerId(data.value); setError("") }}
                     />
                 </div>
                 <table className="admindashboard-table shortinfo-table" style={borrowerId === "" ? { display: "none" } : {}}>
@@ -228,7 +241,7 @@ function AddTransaction() {
                         selection
                         options={allBooks}
                         value={bookId}
-                        onChange={(event, data) => setBookId(data.value)}
+                        onChange={(event, data) => { setBookId(data.value); setError("") }}
                     />
                 </div>
                 <table className="admindashboard-table shortinfo-table" style={bookId === "" ? { display: "none" } : {}}>
@@ -246,7 +259,7 @@ function AddTransaction() {
                         selection
                         value={transactionType}
                         options={transactionTypes}
-                        onChange={(event, data) => setTransactionType(data.value)}
+                        onChange={(event, data) => { setTransactionType(data.value); setError("") }}
                     />
                 </div>
                 <br />
@@ -256,7 +269,7 @@ function AddTransaction() {
                     className="date-picker"
                     placeholderText="MM/DD/YYYY"
                     selected={fromDate}
-                    onChange={(date) => { setFromDate(date); setFromDateString(moment(date).format("MM/DD/YYYY")) }}
+                    onChange={(date) => { setFromDate(date); setFromDateString(moment(date).format("MM/DD/YYYY")); setError("") }}
                     minDate={new Date()}
                     dateFormat="MM/dd/yyyy"
                 />
@@ -266,8 +279,8 @@ function AddTransaction() {
                     className="date-picker"
                     placeholderText="MM/DD/YYYY"
                     selected={toDate}
-                    onChange={(date) => { setToDate(date); setToDateString(moment(date).format("MM/DD/YYYY")) }}
-                    minDate={new Date()}
+                    onChange={(date) => { setToDate(date); setToDateString(moment(date).format("MM/DD/YYYY")); setError("") }}
+                    minDate={fromDate || new Date()}
                     dateFormat="MM/dd/yyyy"
                 />
 
