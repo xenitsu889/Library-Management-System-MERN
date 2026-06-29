@@ -35,6 +35,7 @@ Use the root-level [netlify.toml](netlify.toml) file to deploy the frontend as a
 - Build command: `npm install`
 - Start command: `npm start`
 - Environment variables:
+  - `NODE_ENV=production`
   - `MONGO_URL` = your Atlas connection string
   - `PORT` = leave unset if the platform assigns it automatically
 
@@ -58,12 +59,20 @@ After the backend is live, run the demo seed against the same MongoDB database:
 
 ### 5) Test logins
 
-- Admin: `EMP1001 / Admin@123`
-- Student 1: `STU1001 / Student@123`
-- Student 2: `STU1002 / Student@123`
+- Password for all demo accounts: `TestPass@123`
+- Admin ID: `EMP1001`
+- Student 1 ID: `STU1001`
+- Student 2 ID: `STU1002`
 
 ## Notes
 
 - The frontend reads `REACT_APP_API_URL` at build time, so rebuild the static site after changing the backend URL.
 - The backend already allows cross-origin requests, so the split deployment works without additional auth changes.
 - If you want a single-server deployment later, the frontend can be built and served from Express, but the current split setup is the fastest path.
+
+## Production Env Templates
+
+Use these files as the starting point for production config:
+
+- [backend/.env.production.example](backend/.env.production.example)
+- [frontend/.env.production.example](frontend/.env.production.example)

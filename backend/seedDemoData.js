@@ -8,6 +8,8 @@ import BookTransaction from "./models/BookTransaction.js";
 
 dotenv.config();
 
+const DEFAULT_PASSWORD = "TestPass@123";
+
 const databaseOptions = {
   useCreateIndex: true,
   useNewUrlParser: true,
@@ -44,7 +46,7 @@ async function seedDemoData() {
       address: "District Library Office, Visakhapatnam",
       mobileNumber: 9876543210,
       email: "admin@library.gov.in",
-      password: await bcrypt.hash("Admin@123", 10),
+      password: await bcrypt.hash(DEFAULT_PASSWORD, 10),
       isAdmin: true,
       points: 0,
     },
@@ -58,7 +60,7 @@ async function seedDemoData() {
       address: "Government Degree College, Visakhapatnam",
       mobileNumber: 9123456780,
       email: "aarav.sharma@example.gov.in",
-      password: await bcrypt.hash("Student@123", 10),
+      password: await bcrypt.hash(DEFAULT_PASSWORD, 10),
       isAdmin: false,
       points: 120,
     },
@@ -72,7 +74,7 @@ async function seedDemoData() {
       address: "Municipal Higher Secondary School, Visakhapatnam",
       mobileNumber: 9012345678,
       email: "ananya.iyer@example.gov.in",
-      password: await bcrypt.hash("Student@123", 10),
+      password: await bcrypt.hash(DEFAULT_PASSWORD, 10),
       isAdmin: false,
       points: 80,
     },
@@ -204,9 +206,9 @@ async function seedDemoData() {
   ]);
 
   console.log("Demo data seeded successfully.");
-  console.log("Admin login: EMP1001 / Admin@123");
-  console.log("Student login: STU1001 / Student@123");
-  console.log("Student login: STU1002 / Student@123");
+  console.log("Admin login: EMP1001 / TestPass@123");
+  console.log("Student login: STU1001 / TestPass@123");
+  console.log("Student login: STU1002 / TestPass@123");
 
   await mongoose.disconnect();
 }
