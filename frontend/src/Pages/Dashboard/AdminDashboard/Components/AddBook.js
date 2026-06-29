@@ -95,6 +95,34 @@ function AddBook() {
     }
 
 
+    const deleteBook = async (bookId, bookName) => {
+        if (!window.confirm(`Delete "${bookName}"?`)) return
+        setError("")
+        setSuccess("")
+        try {
+            await axios.delete(API_URL + "api/books/removebook/" + bookId, {
+                data: { isAdmin: user.isAdmin }
+            })
+            setSuccess("Book deleted successfully.")
+            setRecentAddedBooks(recentAddedBooks.filter((b) => b._id !== bookId))
+        } catch (err) {
+            setError(getApiErrorMessage(err, "Failed to delete book."))
+        }
+    }
+
+    const startQuickEdit = (book) => {
+        setBookName(book.bookName)
+        setAlternateTitle(book.alternateTitle || "")
+        setAuthor(book.author)
+        setBookCountAvailable(String(book.bookCountAvailable))
+        setLanguage(book.language || "")
+        setPublisher(book.publisher || "")
+        setSelectedCategories(book.categories?.map((c) => (typeof c === "object" ? c._id : c)) || [])
+        setSuccess("Book loaded into form for editing. Update and submit, or use Manage Books.")
+        setError("")
+        window.scrollTo({ top: 0, behavior: "smooth" })
+    }
+
     useEffect(() => {
         const getallBooks = async () => {
             try {
@@ -106,7 +134,6 @@ function AddBook() {
         }
         getallBooks()
     }, [API_URL])
-
 
     return (
         <div>
@@ -168,14 +195,19 @@ function AddBook() {
                         <th>S.No</th>
                         <th>Book Name</th>
                         <th>Added Date</th>
+                        <th>Actions</th>
                     </tr>
                     {
                         recentAddedBooks.map((book, index) => {
                             return (
-                                <tr key={index}>
+                                <tr key={book._id || index}>
                                     <td>{index + 1}</td>
                                     <td>{book.bookName}</td>
                                     <td>{book.createdAt.substring(0, 10)}</td>
+                                    <td>
+                                        <button type="button" className="dashboard-action-btn secondary" onClick={() => startQuickEdit(book)}>Edit</button>
+                                        <button type="button" className="dashboard-action-btn danger" onClick={() => deleteBook(book._id, book.bookName)}>Delete</button>
+                                    </td>
                                 </tr>
                             )
                         })

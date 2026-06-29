@@ -5,7 +5,7 @@ import { Dropdown } from 'semantic-ui-react'
 import '../../MemberDashboard/MemberDashboard.css'
 import moment from "moment"
 import FormMessage from '../../../../Components/FormMessage'
-import { getApiErrorMessage } from '../../../../utils/formHelpers'
+import { getApiErrorMessage, getMemberRank } from '../../../../utils/formHelpers'
 
 function GetMember() {
 
@@ -15,6 +15,7 @@ function GetMember() {
     const [memberId, setMemberId] = useState(null)
     const [memberDetails, setMemberDetails] = useState(null)
     const [error, setError] = useState("")
+    const [memberRank, setMemberRank] = useState(null)
 
     //Fetch Members
     useEffect(() => {
@@ -37,8 +38,12 @@ function GetMember() {
         const getMemberDetails = async () => {
             if(memberId !== null){
                 try {
-                    const response = await axios.get(API_URL + "api/users/getuser/" + memberId)
-                    setMemberDetails(response.data)
+                    const [profileRes, leaderboardRes] = await Promise.all([
+                        axios.get(API_URL + "api/users/getuser/" + memberId),
+                        axios.get(API_URL + "api/users/leaderboard"),
+                    ])
+                    setMemberDetails(profileRes.data)
+                    setMemberRank(getMemberRank(leaderboardRes.data, memberId))
                 }
                 catch (err) {
                     setError(getApiErrorMessage(err, "Failed to load member details."))
@@ -121,7 +126,7 @@ function GetMember() {
                             <div className="dashboard-title-line"></div>
                             <div style={{ display: "flex", flexDirection: "column", flex: "0.5" }}>
                                 <p style={{ fontSize: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}><b>Rank</b></p>
-                                <p style={{ fontSize: "25px", fontWeight: "500", display: "flex", alignItems: "center", justifyContent: "center", marginTop: "15px" }}>{memberDetails?.points ?? 0}</p>
+                                <p style={{ fontSize: "25px", fontWeight: "500", display: "flex", alignItems: "center", justifyContent: "center", marginTop: "15px" }}>{memberRank ?? "—"}</p>
                             </div>
                         </div>
                     </div>

@@ -13,9 +13,8 @@ import DoubleArrowIcon from "@material-ui/icons/DoubleArrow";
 import { IconButton } from "@material-ui/core";
 import { AuthContext } from "../../../Context/AuthContext";
 import axios from "axios";
-import moment from "moment";
 import FormMessage from "../../../Components/FormMessage";
-import { getApiErrorMessage } from "../../../utils/formHelpers";
+import { getApiErrorMessage, calculateFine, getMemberRank, validatePassword } from "../../../utils/formHelpers";
 
 function MemberDashboard() {
   const [active, setActive] = useState("profile");
@@ -26,16 +25,21 @@ function MemberDashboard() {
   const [memberDetails, setMemberDetails] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [rank, setRank] = useState(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [passwordMsg, setPasswordMsg] = useState({ type: "", text: "" });
 
   useEffect(() => {
     const getMemberDetails = async () => {
       setLoading(true);
       setError("");
       try {
-        const response = await axios.get(
-          API_URL + "api/users/getuser/" + user._id
-        );
-        setMemberDetails(response.data);
+        const [profileRes, leaderboardRes] = await Promise.all([
+          axios.get(API_URL + "api/users/getuser/" + user._id),
+          axios.get(API_URL + "api/users/leaderboard"),
+        ]);
+        setMemberDetails(profileRes.data);
+        setRank(getMemberRank(leaderboardRes.data, user._id));
       } catch (err) {
         setError(getApiErrorMessage(err, "Failed to load your profile."));
       }
@@ -43,6 +47,30 @@ function MemberDashboard() {
     };
     getMemberDetails();
   }, [API_URL, user]);
+
+  const totalFines = memberDetails?.activeTransactions
+    ?.filter((t) => t.transactionType === "Issued" && t.transactionStatus === "Active")
+    .reduce((sum, t) => sum + calculateFine(t.toDate), 0) || 0;
+
+  const changePassword = async (e) => {
+    e.preventDefault();
+    setPasswordMsg({ type: "", text: "" });
+    const result = validatePassword(newPassword);
+    if (!result.valid) {
+      setPasswordMsg({ type: "error", text: result.error });
+      return;
+    }
+    try {
+      await axios.put(API_URL + "api/users/updateuser/" + user._id, {
+        userId: user._id,
+        password: result.value,
+      });
+      setNewPassword("");
+      setPasswordMsg({ type: "success", text: "Password updated successfully." });
+    } catch (err) {
+      setPasswordMsg({ type: "error", text: getApiErrorMessage(err, "Failed to update password.") });
+    }
+  };
 
   const logout = () => {
     localStorage.removeItem("user");
@@ -225,15 +253,36 @@ function MemberDashboard() {
                       marginTop: "15px",
                     }}
                   >
-                    {memberDetails?.points ?? 0}
+                    {rank ?? "—"}
                   </p>
                 </div>
               </div>
+            </div>
+            <div style={{ margin: "20px 25px", maxWidth: 400 }}>
+              <p className="member-dashboard-heading">Change Password</p>
+              <FormMessage type={passwordMsg.type} message={passwordMsg.text} />
+              <form onSubmit={changePassword}>
+                <input
+                  className="addmember-form-input"
+                  type="password"
+                  minLength="6"
+                  placeholder="New password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                />
+                <input className="addmember-submit" type="submit" value="UPDATE PASSWORD" style={{ marginTop: 10 }} />
+              </form>
             </div>
           </div>
 
           <div className="member-activebooks-content" id="activebooks@member">
             <p className="member-dashboard-heading">Issued</p>
+            {totalFines > 0 && (
+              <p style={{ margin: "0 25px 12px", fontWeight: 700, color: "#b71c1c" }}>
+                Total outstanding fines: ₹{totalFines}
+              </p>
+            )}
             <table className="activebooks-table">
               <tr>
                 <th>S.No</th>
@@ -253,21 +302,7 @@ function MemberDashboard() {
                       <td>{data.bookName}</td>
                       <td>{data.fromDate}</td>
                       <td>{data.toDate}</td>
-                      <td>
-                        {Math.floor(
-                          (Date.parse(moment(new Date()).format("MM/DD/YYYY")) -
-                            Date.parse(data.toDate)) /
-                            86400000
-                        ) <= 0
-                          ? 0
-                          : Math.floor(
-                              (Date.parse(
-                                moment(new Date()).format("MM/DD/YYYY")
-                              ) -
-                                Date.parse(data.toDate)) /
-                                86400000
-                            ) * 10}
-                      </td>
+                      <td>{calculateFine(data.toDate)}</td>
                     </tr>
                   );
                 })}

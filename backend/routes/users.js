@@ -1,6 +1,8 @@
 import express from "express";
 import User from "../models/User.js";
+import BookTransaction from "../models/BookTransaction.js";
 import bcrypt from "bcrypt";
+import { formatMongooseError, parseMobileNumber, parsePositiveInt } from "../utils/validation.js";
 
 const router = express.Router()
 
@@ -31,11 +33,23 @@ router.get("/getuser/:id", async (req, res) => {
 /* Getting all members in the library */
 router.get("/allmembers", async (req,res)=>{
     try{
-        const users = await User.find({}).populate("activeTransactions").populate("prevTransactions").sort({_id:-1})
+        const users = await User.find({ isAdmin: { $ne: true } }).populate("activeTransactions").populate("prevTransactions").sort({_id:-1})
         res.status(200).json(users)
     }
     catch(err){
         return res.status(500).json(err);
+    }
+})
+
+/* Leaderboard by points */
+router.get("/leaderboard", async (req, res) => {
+    try {
+        const users = await User.find({ isAdmin: { $ne: true } })
+            .select("userFullName admissionId employeeId userType points")
+            .sort({ points: -1 });
+        res.status(200).json(users);
+    } catch (err) {
+        return res.status(500).json("Failed to load leaderboard");
     }
 })
 
@@ -56,12 +70,30 @@ router.put("/updateuser/:id", async (req, res) => {
             allowedFields.forEach((field) => {
                 if (req.body[field] !== undefined) updateFields[field] = req.body[field];
             });
-            const user = await User.findByIdAndUpdate(req.params.id, {
+            if (updateFields.mobileNumber !== undefined) {
+                const mobileResult = parseMobileNumber(updateFields.mobileNumber);
+                if (mobileResult.error) {
+                    return res.status(400).json(mobileResult.error);
+                }
+                updateFields.mobileNumber = mobileResult.value;
+            }
+            if (updateFields.age !== undefined) {
+                const ageResult = parsePositiveInt(updateFields.age, "Age");
+                if (ageResult.error) {
+                    return res.status(400).json(ageResult.error);
+                }
+                updateFields.age = ageResult.value;
+            }
+            if (updateFields.email !== undefined) {
+                updateFields.email = updateFields.email.trim().toLowerCase();
+            }
+            await User.findByIdAndUpdate(req.params.id, {
                 $set: updateFields,
             });
             res.status(200).json("Account has been updated");
         } catch (err) {
-            return res.status(500).json(err);
+            const { status, message } = formatMongooseError(err);
+            res.status(status).json(message);
         }
     }
     else {
@@ -83,6 +115,21 @@ router.put("/:id/move-to-activetransactions" , async (req,res)=>{
     }
     else{
         res.status(403).json("Only Admin can add a transaction")
+    }
+})
+
+/* Remove transaction from active list without moving to history */
+router.put("/:id/remove-from-active", async (req, res) => {
+    if (req.body.isAdmin) {
+        try {
+            const user = await User.findById(req.body.userId);
+            await user.updateOne({ $pull: { activeTransactions: req.params.id } });
+            res.status(200).json("Removed from active transactions");
+        } catch (err) {
+            res.status(500).json(err);
+        }
+    } else {
+        res.status(403).json("Only Admin can do this");
     }
 })
 
@@ -108,10 +155,25 @@ router.put("/:id/move-to-prevtransactions", async (req,res)=>{
 router.delete("/deleteuser/:id", async (req, res) => {
     if (req.body.userId === req.params.id || req.body.isAdmin) {
         try {
+            const user = await User.findById(req.params.id).populate("activeTransactions");
+            if (!user) {
+                return res.status(404).json("User not found.");
+            }
+            if (user.isAdmin && req.body.userId !== req.params.id) {
+                return res.status(400).json("Admin accounts cannot be deleted from this screen.");
+            }
+            const activeCount = await BookTransaction.countDocuments({
+                borrowerId: req.params.id.toString(),
+                transactionStatus: "Active"
+            });
+            if (activeCount > 0) {
+                return res.status(400).json("Cannot delete a member with active loans or reservations.");
+            }
             await User.findByIdAndDelete(req.params.id);
             res.status(200).json("Account has been deleted");
         } catch (err) {
-            return res.status(500).json(err);
+            const { status, message } = formatMongooseError(err);
+            res.status(status).json(message);
         }
     } else {
         return res.status(403).json("You can delete only your account!");

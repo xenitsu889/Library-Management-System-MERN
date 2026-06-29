@@ -1,5 +1,5 @@
 import { React, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 import './Header.css'
 
 import MenuIcon from '@material-ui/icons/Menu';
@@ -8,6 +8,8 @@ import ClearIcon from '@material-ui/icons/Clear';
 function Header() {
 
     const [menutoggle, setMenutoggle] = useState(false)
+    const [searchQuery, setSearchQuery] = useState("")
+    const history = useHistory()
 
     const Toggle = () => {
         setMenutoggle(!menutoggle)
@@ -15,6 +17,17 @@ function Header() {
 
     const closeMenu = () => {
         setMenutoggle(false)
+    }
+
+    const handleSearch = (e) => {
+        e.preventDefault()
+        const q = searchQuery.trim()
+        if (q) {
+            history.push(`/books?q=${encodeURIComponent(q)}`)
+        } else {
+            history.push('/books')
+        }
+        closeMenu()
     }
 
     return (
@@ -25,7 +38,15 @@ function Header() {
             </Link>
             </div>
             <div className='nav-right'>
-                <input className='search-input' type='text' placeholder='Search books'/>
+                <form onSubmit={handleSearch} style={{ display: 'flex', width: '100%' }}>
+                    <input
+                        className='search-input'
+                        type='text'
+                        placeholder='Search books'
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </form>
                 <ul className={menutoggle ? "nav-options active" : "nav-options"}>
                     <li className="option" onClick={() => { closeMenu() }}>
                         <Link to='/'>

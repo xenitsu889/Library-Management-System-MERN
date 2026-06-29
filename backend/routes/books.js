@@ -1,6 +1,7 @@
 import express from "express"
 import Book from "../models/Book.js"
 import BookCategory from "../models/BookCategory.js"
+import BookTransaction from "../models/BookTransaction.js"
 import { formatMongooseError, parsePositiveInt } from "../utils/validation.js"
 
 const router = express.Router()
@@ -8,7 +9,7 @@ const router = express.Router()
 /* Get all books in the db */
 router.get("/allbooks", async (req, res) => {
     try {
-        const books = await Book.find({}).populate("transactions").sort({ _id: -1 })
+        const books = await Book.find({}).populate("transactions").populate("categories").sort({ _id: -1 })
         res.status(200).json(books)
     }
     catch (err) {
@@ -22,8 +23,8 @@ router.get("/getbook/:id", async (req, res) => {
         const book = await Book.findById(req.params.id).populate("transactions")
         res.status(200).json(book)
     }
-    catch {
-        return res.status(500).json(err)
+    catch (err) {
+        return res.status(500).json("Book not found");
     }
 })
 
@@ -89,8 +90,11 @@ router.put("/updatebook/:id", async (req, res) => {
             }
             updateFields.bookCountAvailable = countResult.value;
         }
-        if (req.body.bookName !== undefined) updateFields.bookName = req.body.bookName;
-        if (req.body.author !== undefined) updateFields.author = req.body.author;
+        if (req.body.bookName !== undefined) updateFields.bookName = req.body.bookName.trim();
+        if (req.body.author !== undefined) updateFields.author = req.body.author.trim();
+        if (req.body.alternateTitle !== undefined) updateFields.alternateTitle = req.body.alternateTitle.trim();
+        if (req.body.language !== undefined) updateFields.language = req.body.language.trim();
+        if (req.body.publisher !== undefined) updateFields.publisher = req.body.publisher.trim();
         if (req.body.bookStatus !== undefined) updateFields.bookStatus = req.body.bookStatus;
 
         await Book.findByIdAndUpdate(req.params.id, { $set: updateFields });
@@ -104,18 +108,28 @@ router.put("/updatebook/:id", async (req, res) => {
 
 /* Remove book  */
 router.delete("/removebook/:id", async (req, res) => {
-    if (req.body.isAdmin) {
-        try {
-            const _id = req.params.id
-            const book = await Book.findOne({ _id })
-            await book.remove()
-            await BookCategory.updateMany({ '_id': book.categories }, { $pull: { books: book._id } });
-            res.status(200).json("Book has been deleted");
-        } catch (err) {
-            return res.status(504).json(err);
+    if (!req.body.isAdmin) {
+        return res.status(403).json("You don't have permission to delete a book.");
+    }
+    try {
+        const _id = req.params.id
+        const book = await Book.findById(_id)
+        if (!book) {
+            return res.status(404).json("Book not found.");
         }
-    } else {
-        return res.status(403).json("You dont have permission to delete a book!");
+        const activeLoans = await BookTransaction.countDocuments({
+            bookId: _id.toString(),
+            transactionStatus: "Active"
+        })
+        if (activeLoans > 0) {
+            return res.status(400).json("Cannot delete a book with active loans or reservations.");
+        }
+        await book.deleteOne()
+        await BookCategory.updateMany({ '_id': { $in: book.categories } }, { $pull: { books: book._id } });
+        res.status(200).json("Book has been deleted");
+    } catch (err) {
+        const { status, message } = formatMongooseError(err);
+        res.status(status).json(message);
     }
 })
 

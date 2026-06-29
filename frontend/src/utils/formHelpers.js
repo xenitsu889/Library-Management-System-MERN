@@ -53,3 +53,23 @@ export const validatePassword = (password) => {
 };
 
 export const isNonEmpty = (value) => value !== null && value !== undefined && String(value).trim() !== "";
+
+export const calculateFine = (toDate) => {
+    const today = new Date();
+    const due = new Date(toDate);
+    const daysOverdue = Math.floor((today - due) / 86400000);
+    return daysOverdue <= 0 ? 0 : daysOverdue * 10;
+};
+
+export const formatDateMMDDYYYY = (date) => {
+    const d = new Date(date);
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    const yyyy = d.getFullYear();
+    return `${mm}/${dd}/${yyyy}`;
+};
+
+export const getMemberRank = (leaderboard, memberId) => {
+    const index = leaderboard.findIndex((m) => m._id === memberId);
+    return index === -1 ? null : index + 1;
+};
