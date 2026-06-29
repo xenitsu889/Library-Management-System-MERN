@@ -30,7 +30,11 @@ router.post("/register", async (req, res) => {
     /* Save User and Return */
     const user = await newuser.save();
     const { password, ...userWithoutPassword } = user._doc;
-    res.status(200).json(userWithoutPassword);
+    const authUser = {
+      ...userWithoutPassword,
+      username: userWithoutPassword.userFullName,
+    };
+    res.status(200).json(authUser);
   } catch (err) {
     console.log(err);
   }
@@ -60,7 +64,11 @@ router.post("/signin", async (req, res) => {
     }
 
     const { password, ...userWithoutPassword } = user._doc;
-    res.status(200).json(userWithoutPassword);
+    const authUser = {
+      ...userWithoutPassword,
+      username: userWithoutPassword.userFullName,
+    };
+    res.status(200).json(authUser);
   } catch (err) {
     console.log(err);
     return res.status(500).json("Login failed");
