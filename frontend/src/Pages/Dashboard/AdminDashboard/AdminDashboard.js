@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import "./AdminDashboard.css"
 import AddTransaction from './Components/AddTransaction'
 import AddMember from './Components/AddMember'
 import AddBook from './Components/AddBook';
+import { AuthContext } from '../../../Context/AuthContext';
 
 import LibraryBooksIcon from '@material-ui/icons/LibraryBooks';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
@@ -27,8 +28,9 @@ document.head.appendChild(styleLink);
 
 function AdminDashboard() {
 
-    const [active, setActive] = useState("addbooks")
+    const [active, setActive] = useState("profile")
     const [sidebar, setSidebar] = useState(false)
+    const { user } = useContext(AuthContext)
 
     /* Logout Function*/
     const logout = () => {
@@ -62,6 +64,70 @@ function AdminDashboard() {
 
                 </div>
                 <div className="dashboard-option-content">
+                    <div className="member-profile-content" style={active !== "profile" ? { display: 'none' } : {}}>
+                        <div className="user-details-topbar">
+                            <img className="user-profileimage" src="./assets/images/Profile.png" alt=""></img>
+                            <div className="user-info">
+                                <p className="user-name">{user?.userFullName}</p>
+                                <p className="user-id">{user?.employeeId}</p>
+                                <p className="user-email">{user?.email}</p>
+                                <p className="user-phone">{user?.mobileNumber}</p>
+                            </div>
+                        </div>
+                        <div className="user-details-specific">
+                            <div className="specific-left">
+                                <div className="specific-left-top">
+                                    <p className="specific-left-topic">
+                                        <span style={{ fontSize: "18px" }}><b>Age</b></span>
+                                        <span style={{ fontSize: "16px" }}>{user?.age}</span>
+                                    </p>
+                                    <p className="specific-left-topic">
+                                        <span style={{ fontSize: "18px" }}><b>Gender</b></span>
+                                        <span style={{ fontSize: "16px" }}>{user?.gender}</span>
+                                    </p>
+                                </div>
+                                <div className="specific-left-bottom">
+                                    <p className="specific-left-topic">
+                                        <span style={{ fontSize: "18px" }}><b>DOB</b></span>
+                                        <span style={{ fontSize: "16px" }}>{user?.dob}</span>
+                                    </p>
+                                    <p className="specific-left-topic">
+                                        <span style={{ fontSize: "18px" }}><b>Address</b></span>
+                                        <span style={{ fontSize: "16px" }}>{user?.address}</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="specific-right">
+                                <div className="specific-right-top">
+                                    <p className="specific-right-topic"><b>Role</b></p>
+                                    <p style={{
+                                        fontSize: "25px",
+                                        fontWeight: "500",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        marginTop: "15px",
+                                    }}>
+                                        {user?.userType}
+                                    </p>
+                                </div>
+                                <div className="dashboard-title-line"></div>
+                                <div className="specific-right-bottom">
+                                    <p className="specific-right-topic"><b>Status</b></p>
+                                    <p style={{
+                                        fontSize: "25px",
+                                        fontWeight: "500",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        marginTop: "15px",
+                                    }}>
+                                        Admin
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div className="dashboard-addbooks-content" style={active !== "addbook" ? { display: 'none' } : {}}>
                         <AddBook />
                     </div>

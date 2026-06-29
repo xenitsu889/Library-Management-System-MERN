@@ -21,7 +21,7 @@ function App() {
             <Home />
           </Route>
           <Route exact path='/signin'>
-            {user ? (user.isAdmin ? <Redirect to='/dashboard@admin' />:<Redirect to='/dashboard@member' />) : <Signin />}
+            {user ? (user.isAdmin ? <Redirect to='/dashboard@admin' /> : <Redirect to='/dashboard@member' />) : <Signin />}
           </Route>
           <Route exact path='/dashboard@member'>
             {user ? (user.isAdmin === false ? <MemberDashboard /> : <Redirect to='/' />) : <Redirect to='/' />}

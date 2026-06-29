@@ -1,24 +1,28 @@
 import React, { useContext, useState } from 'react'
 import './Signin.css'
 import axios from 'axios'
+import { useHistory } from 'react-router-dom'
 import { AuthContext } from '../Context/AuthContext.js'
 import Switch from '@material-ui/core/Switch';
 
 function Signin() {
     const [isStudent, setIsStudent] = useState(true)
-    const [admissionId, setAdmissionId] = useState()
-    const [employeeId,setEmployeeId] = useState()
-    const [password, setPassword] = useState()
+    const [admissionId, setAdmissionId] = useState("")
+    const [employeeId,setEmployeeId] = useState("")
+    const [password, setPassword] = useState("")
     const [error, setError] = useState("")
     const { dispatch } = useContext(AuthContext)
+    const history = useHistory()
 
-    const API_URL = process.env.REACT_APP_API_URL
+    const API_URL = (process.env.REACT_APP_API_URL || "http://localhost:5000/").replace(/\/$/, "")
     
     const loginCall = async (userCredential, dispatch) => {
         dispatch({ type: "LOGIN_START" });
         try {
-            const res = await axios.post(API_URL+"api/auth/signin", userCredential);
+            const res = await axios.post(`${API_URL}/api/auth/signin`, userCredential);
             dispatch({ type: "LOGIN_SUCCESS", payload: res.data });
+            const redirectTo = res.data.isAdmin ? "/dashboard@admin" : "/dashboard@member"
+            history.push(redirectTo);
         }
         catch (err) {
             dispatch({ type: "LOGIN_FAILURE", payload: err })
@@ -28,9 +32,28 @@ function Signin() {
 
     const handleForm = (e) => {
         e.preventDefault()
-        isStudent
-        ? loginCall({ admissionId, password }, dispatch)
-        : loginCall({ employeeId,password }, dispatch)
+        const loginId = (isStudent ? admissionId : employeeId).trim()
+
+        if (!loginId || !password) {
+            setError("Enter your ID and password")
+            return
+        }
+
+        const credentials = isStudent
+            ? { admissionId: loginId, password }
+            : { employeeId: loginId, password }
+
+        loginCall(credentials, dispatch)
+    }
+
+    const handleModeChange = (event, isStaff) => {
+        setError("")
+        setIsStudent(!isStaff)
+        if (isStaff) {
+            setAdmissionId("")
+        } else {
+            setEmployeeId("")
+        }
     }
 
     return (
@@ -42,16 +65,17 @@ function Signin() {
                     <div className="persontype-question">
                         <p>Are you signing in as staff?</p>
                         <Switch
-                            onChange={() => setIsStudent(!isStudent)}
+                            onChange={handleModeChange}
+                            checked={!isStudent}
                             color="primary"
                         />
                     </div>
                     <div className="error-message"><p>{error}</p></div>
                     <div className="signin-fields">
-                        <label htmlFor={isStudent?"admissionId":"employeeId"}> <b>{isStudent?"Admission ID":"Employee ID"}</b></label>
-                        <input className='signin-textbox' type="text" placeholder={isStudent?"Enter Admission ID":"Enter Employee ID"} name={isStudent?"admissionId":"employeeId"} required onChange={(e) => { isStudent?setAdmissionId(e.target.value):setEmployeeId(e.target.value) }}/>
+                        <label htmlFor={isStudent ? "admissionId" : "employeeId"}> <b>{isStudent ? "Admission ID" : "Employee ID"}</b></label>
+                        <input id={isStudent ? "admissionId" : "employeeId"} className='signin-textbox' type="text" placeholder={isStudent ? "Enter Admission ID" : "Enter Employee ID"} name={isStudent ? "admissionId" : "employeeId"} value={isStudent ? admissionId : employeeId} autoComplete="username" required onChange={(e) => { isStudent ? setAdmissionId(e.target.value) : setEmployeeId(e.target.value) }}/>
                         <label htmlFor="password"><b>Password</b></label>
-                        <input className='signin-textbox' type="password" minLength='6' placeholder="Enter Password" name="psw" required onChange={(e) => { setPassword(e.target.value) }} />
+                        <input id="password" className='signin-textbox' type="password" minLength='6' placeholder="Enter Password" name="password" autoComplete="current-password" value={password} required onChange={(e) => { setPassword(e.target.value) }} />
                         </div>
                     <button className="signin-button">Sign In</button>
                     <a className="forget-pass" href="#home">For account support, contact administration.</a>

@@ -29,7 +29,7 @@ router.post("/register", async (req, res) => {
 
     /* Save User and Return */
     const user = await newuser.save();
-    const { password, ...userWithoutPassword } = user._doc;
+    const { password: storedPassword, ...userWithoutPassword } = user._doc;
     const authUser = {
       ...userWithoutPassword,
       username: userWithoutPassword.userFullName,
@@ -43,27 +43,30 @@ router.post("/register", async (req, res) => {
 /* User Login */
 router.post("/signin", async (req, res) => {
   try {
-    console.log(req.body, "req");
+    const { admissionId, employeeId, password } = req.body;
+
+    if (!password || (!admissionId && !employeeId)) {
+      return res.status(400).json("Missing login credentials");
+    }
+
     const user = req.body.admissionId
       ? await User.findOne({
-          admissionId: req.body.admissionId,
+          admissionId,
         })
       : await User.findOne({
-          employeeId: req.body.employeeId,
+          employeeId,
         });
-
-    console.log(user, "user");
 
     if (!user) {
       return res.status(404).json("User not found");
     }
 
-    const validPass = await bcrypt.compare(req.body.password, user.password);
+    const validPass = await bcrypt.compare(password, user.password);
     if (!validPass) {
       return res.status(400).json("Wrong Password");
     }
 
-    const { password, ...userWithoutPassword } = user._doc;
+    const { password: storedPassword, ...userWithoutPassword } = user._doc;
     const authUser = {
       ...userWithoutPassword,
       username: userWithoutPassword.userFullName,
